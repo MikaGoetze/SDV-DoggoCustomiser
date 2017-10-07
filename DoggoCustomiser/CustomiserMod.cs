@@ -82,9 +82,11 @@ namespace DoggoCustomiser
             //Let's read the intended t arget colors from the config file.
             Color targetCoatColor = config.CoatColor;
             Color targetCollarColor = config.CollarColor;
-            float coatTolerance = config.CoatTolerance;
-            float collarTolerance = config.CollarTolerance;
-            float shadingMultiplier = config.ShadingMultiplier;
+            
+            //Hardcoded values that make everything work.
+            float coatTolerance = 0.8f;
+            float collarTolerance = 0.5f;
+            float shadingMultiplier = 1.0f;
 
             float tongueTolerance = 0.1f;
                
