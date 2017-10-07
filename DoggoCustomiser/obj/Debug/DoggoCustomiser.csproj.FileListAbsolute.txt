@@ -1,0 +1,5 @@
+C:\Users\Mika\RiderProjects\DoggoCustomiser\DoggoCustomiser\bin\Debug\DoggoCustomiser.dll
+C:\Users\Mika\RiderProjects\DoggoCustomiser\DoggoCustomiser\bin\Debug\DoggoCustomiser.pdb
+C:\Users\Mika\RiderProjects\DoggoCustomiser\DoggoCustomiser\obj\Debug\DoggoCustomiser.csprojResolveAssemblyReference.cache
+C:\Users\Mika\RiderProjects\DoggoCustomiser\DoggoCustomiser\obj\Debug\DoggoCustomiser.dll
+C:\Users\Mika\RiderProjects\DoggoCustomiser\DoggoCustomiser\obj\Debug\DoggoCustomiser.pdb

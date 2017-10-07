@@ -1,0 +1,13 @@
+﻿{
+  "Name": "Doggo Customiser",
+  "Author": "OfficialPiAddict",
+  "Version": {
+    "MajorVersion": 1,
+    "MinorVersion": 0,
+    "PatchVersion": 0,
+    "Build": null
+  },
+  "Description": "Allows you to customise your very own doggo when you first get them.",
+  "UniqueID": "OfficialPiAddict.DoggoCustomiser",
+  "EntryDll": "DoggoCustomiser.dll"
+}
