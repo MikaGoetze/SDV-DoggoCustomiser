@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Diagnostics.Contracts;
 using System.Diagnostics.PerformanceData;
 using System.Runtime.CompilerServices;
@@ -146,6 +147,10 @@ namespace DoggoCustomiser
                 }
 
             }
+            else if (e.Button == SButton.I)
+            {
+                this.Monitor.Log("DogPos: " + GetDog().position);
+            }
         }
 
         public void ChangeCoatColor(Color color)
@@ -180,9 +185,14 @@ namespace DoggoCustomiser
             config = helper.ReadConfig<ModConfig>();
             helper.Content.InvalidateCache("Animals/dog.xnb");
 
-            Game1.currentLocation.characters.Remove(GetDog());
-            
-            Game1.currentLocation.addCharacter((NPC)new Dog(Game1.player.getTileX() + 1, Game1.player.getTileY() + 1));           
+            Dog dog = GetDog();
+
+            Vector2 position = dog.position;
+
+            Game1.removeCharacterFromItsLocation(dog.name);
+
+            dog = GetDog();
+            dog.position = position;
         }
 
         

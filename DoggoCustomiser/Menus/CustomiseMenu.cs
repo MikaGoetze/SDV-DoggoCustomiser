@@ -1,4 +1,5 @@
 ﻿using System;
+using DoggoCustomiser.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
@@ -12,7 +13,7 @@ namespace DoggoCustomiser.Menus
         private ColorPicker coatColorPicker, collarColorPicker;
 
         private ClickableTextureComponent okButton;
-        private ClickableTextureComponent previewButton;
+        private ClickableButtonComponent previewButton;
 
         private ClickableComponent coatLabel, collarLabel, previewLabel;
         private Rectangle backgroundRectangle;
@@ -33,10 +34,12 @@ namespace DoggoCustomiser.Menus
             backgroundRectangle = new Rectangle(
                 this.xPositionOnScreen + this.width - IClickableMenu.spaceToClearSideBorder -
                 IClickableMenu.borderWidth - Game1.tileSize * 3,
-                previewLabel.bounds.Y + Game1.tileSize, Game1.tileSize * 3, Game1.tileSize * 3);
+                previewLabel.bounds.Y + Game1.tileSize / 2, Game1.tileSize * 3, Game1.tileSize * 3);
             
             
-            dogPos = new Vector2(this.xPositionOnScreen + this.width - IClickableMenu.spaceToClearSideBorder - IClickableMenu.borderWidth - Game1.tileSize * 1.5f, backgroundRectangle.Y + Game1.tileSize * 1.5f);
+            dogPos = new Vector2(this.xPositionOnScreen + this.width - IClickableMenu.spaceToClearSideBorder - IClickableMenu.borderWidth - Game1.tileSize * 2.5f, backgroundRectangle.Y + Game1.tileSize * 1.5f);
+            dogPos += new Vector2(Game1.viewport.X, Game1.viewport.Y);
+            
             
             //We want the coatColorPicker all the way on the left. - And everything centered vertically (with a small offset).
             coatColorPicker = new ColorPicker(coatLabel.bounds.X, coatLabel.bounds.Y + (int) (Game1.tileSize * 1.5f));
@@ -50,16 +53,16 @@ namespace DoggoCustomiser.Menus
                     IClickableMenu.spaceToClearTopBorder + Game1.tileSize / 4, Game1.tileSize, Game1.tileSize),
                 (string) null, (string) null, Game1.mouseCursors,
                 Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 46, -1, -1), 1f, false);
-            
-            previewButton = new ClickableTextureComponent("Preview",
+
+            previewButton = new ClickableButtonComponent( "Preview",
                 new Rectangle(
                     this.xPositionOnScreen + this.width - IClickableMenu.borderWidth -
                     IClickableMenu.spaceToClearSideBorder - Game1.tileSize * 3,
                     this.yPositionOnScreen + this.height - IClickableMenu.borderWidth -
                     IClickableMenu.spaceToClearTopBorder + Game1.tileSize / 4, Game1.tileSize * 3, Game1.tileSize),
-                (string) null, (string) null, Game1.mouseCursors,
-                Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 46, -1, -1), 1f, false);
-            
+                1f 
+            );
+
         }
 
         public CustomiseMenu() : base(Game1.viewport.Width / 2 - (632 + IClickableMenu.borderWidth * 2) / 2,
@@ -81,7 +84,7 @@ namespace DoggoCustomiser.Menus
             Game1.drawDialogueBox(this.xPositionOnScreen, this.yPositionOnScreen, this.width, this.height, false, true, (string) null, false);
             //This draws the daybackground over which we can show the dog (while you customise it).
             this.okButton.draw(b, Color.White, 0.75f);
-            this.previewButton.draw(b, Color.White, 0.75f);
+            this.previewButton.draw(b);
             this.coatColorPicker.draw(b);
             this.collarColorPicker.draw(b);
             DrawLabel(this.coatLabel, b); 
@@ -97,11 +100,20 @@ namespace DoggoCustomiser.Menus
             this.drawMouse(b);
         }
 
+        public override void performHoverAction(int x, int y)
+        {
+            base.performHoverAction(x, y);
+            okButton.scale = okButton.containsPoint(x, y) ? Math.Min(okButton.scale + 0.02f, okButton.baseScale + 0.1f) : Math.Max(okButton.scale - 0.02f, okButton.baseScale);
+            previewButton.scale = previewButton.containsPoint(x, y)
+                ? Math.Min(previewButton.scale + 0.02f, previewButton.baseScale + 0.1f)
+                : Math.Max(previewButton.scale - 0.02f, previewButton.baseScale);
+        }
+
         public override void leftClickHeld(int x, int y)
         {
             base.leftClickHeld(x, y);
             if (coatColorPicker.containsPoint(x, y)) CustomiserMod.Instance.ChangeCoatColor(coatColorPicker.clickHeld(x, y));
-            if(collarColorPicker.containsPoint(x, y)) CustomiserMod.Instance.ChangeCollarColor(collarColorPicker.click(x, y));
+            if (collarColorPicker.containsPoint(x, y)) CustomiserMod.Instance.ChangeCollarColor(collarColorPicker.click(x, y));
         }
 
         public override void receiveLeftClick(int x, int y, bool playSound = true)
@@ -113,8 +125,11 @@ namespace DoggoCustomiser.Menus
                 CustomiserMod.Instance.ResetDog();
                 Game1.activeClickableMenu = null;
             }
+            
+            if(previewButton.containsPoint(x, y)) CustomiserMod.Instance.ResetDog();
+            
             if (coatColorPicker.containsPoint(x, y)) CustomiserMod.Instance.ChangeCoatColor(coatColorPicker.click(x, y));
-            if(collarColorPicker.containsPoint(x, y)) CustomiserMod.Instance.ChangeCollarColor(collarColorPicker.click(x, y));
+            if (collarColorPicker.containsPoint(x, y)) CustomiserMod.Instance.ChangeCollarColor(collarColorPicker.click(x, y));
         }
 
         public override void receiveRightClick(int x, int y, bool playSound = true)
