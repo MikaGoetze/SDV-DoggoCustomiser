@@ -65,33 +65,34 @@ namespace DoggoCustomiser.Menus
             );
 
         }
+        
+        private void RGBtoHSV(float r, float g, float b, out float h, out float s, out float v)
+        {
+          float num1 = Math.Min(Math.Min(r, g), b);
+          float num2 = Math.Max(Math.Max(r, g), b);
+          v = num2;
+          float num3 = num2 - num1;
+          if ((double) num2 != 0.0)
+          {
+            s = num3 / num2;
+            h = (double) r != (double) num2 ? ((double) g != (double) num2 ? (float) (4.0 + ((double) r - (double) g) / (double) num3) : (float) (2.0 + ((double) b - (double) r) / (double) num3)) : (g - b) / num3;
+            h = h * 60f;
+            if ((double) h >= 0.0)
+              return;
+            h = h + 360f;
+          }
+          else
+          {
+            s = 0.0f;
+            h = -1f;
+          }
+        }
 
         private void SetColorPickerBars(Color color, ref ColorPicker colorPicker)
         {
 
-            int r, g, b;
             float h, s, v;
-
-            r = color.R;
-            b = color.B;
-            g = color.G;
-            
-            float num1 = Math.Min(Math.Min(r, g), b);
-            float num2 = Math.Max(Math.Max(r, g), b);
-            v = num2;
-            float num3 = num2 - num1;
-            if ((double) num2 != 0.0)
-            {
-                s = num3 / num2;
-                h = (double) r != (double) num2 ? ((double) g != (double) num2 ? (float) (4.0 + ((double) r - (double) g) / (double) num3) : (float) (2.0 + ((double) b - (double) r) / (double) num3)) : (g - b) / num3;
-                h = h * 60f;
-                h = h + 360f;
-            }
-            else
-            {
-                s = 0.0f;
-                h = -1f;
-            }
+            RGBtoHSV(color.R, color.G, color.B, out h, out s, out v);
             
             CustomiserMod.Instance.Monitor.Log("H Val: " + (h / 360) * 100);
             
