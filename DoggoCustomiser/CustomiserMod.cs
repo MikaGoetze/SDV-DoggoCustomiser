@@ -80,7 +80,7 @@ namespace DoggoCustomiser
 
         private void ReadConfig()
         {
-            config = helper.ReadConfig<ModConfig>();
+            config = this.Helper.ReadJsonFile<ModConfig>("data/{Constants.SaveFolderName}_dog.json") ?? new ModConfig();
             collarColor = config.CollarColor;
             coatColor = config.CoatColor;
         }
@@ -119,7 +119,7 @@ namespace DoggoCustomiser
             //DO NOT CHANGE THE ORDER OF THESE OPERATIONS. THEY MATTER!
 
             //First up lets find the tongue and set it to a specific color for the sake of preserving it.
-            FindAndLerpColor(ref pixels, collarColor, collarColor, collarTolerance);
+            FindAndLerpColor(ref pixels, collarColor, this.collarColor, collarTolerance);
             FindAndLerpColor(ref pixels, tongueColor, new Color(25, 25, 25, 25), tongueTolerance);
             FindAndLerpColorWithShading(ref pixels, litCoatColor, coatColor, neutralFeatureColor, coatTolerance,
                 shadingMultiplier);
@@ -195,6 +195,13 @@ namespace DoggoCustomiser
             dog.position = position;
         }
 
+
+        public void Save(object sender, EventArgs e)
+        {
+            config.CoatColor = coatColor;
+            config.CollarColor = collarColor;
+            this.helper.WriteJsonFile("data/{Constants.SaveFolderName}_dog.json", config);
+        }
         
         public override void Entry(IModHelper helper)
         {
@@ -202,6 +209,7 @@ namespace DoggoCustomiser
             this.helper = helper;
             this.Monitor.Log("Loaded DoggoCustomiser configuration file.");
             InputEvents.ButtonPressed += ButtonDown;
+            SaveEvents.BeforeSave += Save;
             ReadConfig();
         }
     }
