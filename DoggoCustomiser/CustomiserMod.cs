@@ -23,9 +23,6 @@ namespace DoggoCustomiser
         private ModConfig config;
         private IModHelper helper;
 
-        private Color coatColor;
-        private Color collarColor;
-
         private static CustomiserMod _instance;
 
         public static CustomiserMod Instance => _instance ?? (_instance = new CustomiserMod());
@@ -80,15 +77,14 @@ namespace DoggoCustomiser
 
         private void ReadConfig()
         {
-            config = this.Helper.ReadJsonFile<ModConfig>("data/{Constants.SaveFolderName}_dog.json") ?? new ModConfig();
-            collarColor = config.CollarColor;
-            coatColor = config.CoatColor;
+            config = this.Helper.ReadJsonFile<ModConfig>("data/" + Constants.SaveFolderName + ".json") ?? new ModConfig();
         }
 
 
 
         public void Edit<T>(IAssetData asset)
         {
+            ReadConfig();
             this.Monitor.Log("Processing dog sprite.");
 
             //Colors of the original dog.
@@ -110,7 +106,7 @@ namespace DoggoCustomiser
             float tongueTolerance = 0.1f;
 
             //Lets lerp the feature color (gray) towards the target color - to make correct shading
-            neutralFeatureColor = Color.Lerp(neutralFeatureColor, coatColor, 0.02f);
+            neutralFeatureColor = Color.Lerp(neutralFeatureColor, GetCoatColor(), 0.02f);
 
             //Alright - lets see what we can do to it here.
             Color[] pixels = new Color[dogTexture2D.Height * dogTexture2D.Width];
@@ -119,9 +115,9 @@ namespace DoggoCustomiser
             //DO NOT CHANGE THE ORDER OF THESE OPERATIONS. THEY MATTER!
 
             //First up lets find the tongue and set it to a specific color for the sake of preserving it.
-            FindAndLerpColor(ref pixels, collarColor, this.collarColor, collarTolerance);
+            FindAndLerpColor(ref pixels, collarColor, GetCollarColor(), collarTolerance);
             FindAndLerpColor(ref pixels, tongueColor, new Color(25, 25, 25, 25), tongueTolerance);
-            FindAndLerpColorWithShading(ref pixels, litCoatColor, coatColor, neutralFeatureColor, coatTolerance,
+            FindAndLerpColorWithShading(ref pixels, litCoatColor, GetCoatColor(), neutralFeatureColor, coatTolerance,
                 shadingMultiplier);
             FindAndLerpColor(ref pixels, new Color(25, 25, 25, 25), tongueColor, 0.01f, false);
 
@@ -131,6 +127,11 @@ namespace DoggoCustomiser
             asset.AsImage().PatchImage(dogTexture2D);
         }
 
+        public void WriteConfig()
+        {
+            helper.WriteJsonFile("data/" + Constants.SaveFolderName + ".json", config);
+        }
+        
         void ButtonDown(object sender, EventArgsInput e)
         {
             if (e.Button == SButton.P)
@@ -155,13 +156,24 @@ namespace DoggoCustomiser
 
         public void ChangeCoatColor(Color color)
         {
-            coatColor = color;
+            config.CoatColor = color;
         }
 
         public void ChangeCollarColor(Color color)
         {
-            collarColor = color;
+            config.CollarColor = color;
         }
+
+        public Color GetCoatColor()
+        {
+            return config.CoatColor;
+        }
+
+        public Color GetCollarColor()
+        {
+            return config.CollarColor;
+        }
+        
 
         public Dog GetDog()
         {
@@ -198,19 +210,40 @@ namespace DoggoCustomiser
 
         public void Save(object sender, EventArgs e)
         {
-            config.CoatColor = coatColor;
-            config.CollarColor = collarColor;
-            this.helper.WriteJsonFile("data/{Constants.SaveFolderName}_dog.json", config);
+            Monitor.Log("Saving dog customisation");
+            helper.WriteJsonFile("data/" + Constants.SaveFolderName + ".json", config);
+        }
+
+        public void SaveAfterTitle(object sender, EventArgs e)
+        {
+            Save(sender, e);
+        }
+
+        public void AfterLoad(object sender, EventArgs e)
+        {
+            Monitor.Log("Reading and updating dog from config.");
+            ReadConfig();
+            ResetDog();
+        }
+
+        public void AfterLevelChange(object sender, EventArgs e)
+        {
+            for (int i = 0; i < Game1.currentLocation.characters.Count; i++)
+            {
+                if(Game1.currentLocation.characters[i].GetType() == typeof(Dog)) ResetDog(); 
+            }
         }
         
+       
         public override void Entry(IModHelper helper)
         {
             _instance = this;
             this.helper = helper;
-            this.Monitor.Log("Loaded DoggoCustomiser configuration file.");
             InputEvents.ButtonPressed += ButtonDown;
             SaveEvents.BeforeSave += Save;
-            ReadConfig();
+            SaveEvents.AfterReturnToTitle += SaveAfterTitle;
+            SaveEvents.AfterLoad += AfterLoad;
+            LocationEvents.CurrentLocationChanged += AfterLevelChange;
         }
     }
 }

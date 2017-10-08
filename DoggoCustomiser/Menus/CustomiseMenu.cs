@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using DoggoCustomiser.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -65,12 +66,52 @@ namespace DoggoCustomiser.Menus
 
         }
 
+        private void SetColorPickerBars(Color color, ref ColorPicker colorPicker)
+        {
+
+            int r, g, b;
+            float h, s, v;
+
+            r = color.R;
+            b = color.B;
+            g = color.G;
+            
+            float num1 = Math.Min(Math.Min(r, g), b);
+            float num2 = Math.Max(Math.Max(r, g), b);
+            v = num2;
+            float num3 = num2 - num1;
+            if ((double) num2 != 0.0)
+            {
+                s = num3 / num2;
+                h = (double) r != (double) num2 ? ((double) g != (double) num2 ? (float) (4.0 + ((double) r - (double) g) / (double) num3) : (float) (2.0 + ((double) b - (double) r) / (double) num3)) : (g - b) / num3;
+                h = h * 60f;
+                h = h + 360f;
+            }
+            else
+            {
+                s = 0.0f;
+                h = -1f;
+            }
+            
+            CustomiserMod.Instance.Monitor.Log("H Val: " + (h / 360) * 100);
+            
+            colorPicker.hueBar.value = (int) ((double) (h / 360.0) * 100.0);
+            colorPicker.saturationBar.value = (int) ((double) s * 100.0);
+            colorPicker.valueBar.value = (int) ((double) v / (double) byte.MaxValue * 100.0);
+       }
+
         public CustomiseMenu() : base(Game1.viewport.Width / 2 - (632 + IClickableMenu.borderWidth * 2) / 2,
             Game1.viewport.Height / 2 - (300 + IClickableMenu.borderWidth * 2) / 2 - Game1.tileSize,
             632 + IClickableMenu.borderWidth * 2, 300 + IClickableMenu.borderWidth * 2 + Game1.tileSize, false)
         {
             setUpPositions();
             
+            //Lets also set up the current positions for the sliders
+            Color coatColor = CustomiserMod.Instance.GetCoatColor();
+            Color collarColor = CustomiserMod.Instance.GetCollarColor(); 
+            
+            SetColorPickerBars(collarColor, ref collarColorPicker);
+            SetColorPickerBars(coatColor, ref coatColorPicker); 
         }
 
         private void DrawLabel(ClickableComponent label, SpriteBatch b)
@@ -100,6 +141,14 @@ namespace DoggoCustomiser.Menus
             this.drawMouse(b);
         }
 
+        public void Close()
+        {
+            CustomiserMod.Instance.WriteConfig();
+            CustomiserMod.Instance.ResetDog();
+            Game1.activeClickableMenu = null;
+        }
+        
+        
         public override void performHoverAction(int x, int y)
         {
             base.performHoverAction(x, y);
@@ -119,14 +168,13 @@ namespace DoggoCustomiser.Menus
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
             base.receiveLeftClick(x, y, playSound);
-            if (okButton.containsPoint(x, y))
+            if (okButton.containsPoint(x, y)) Close();
+
+            if (previewButton.containsPoint(x, y))
             {
-                //Then we have clicked the okay button, so lets reset the dog, and close the menu.
+                CustomiserMod.Instance.WriteConfig();
                 CustomiserMod.Instance.ResetDog();
-                Game1.activeClickableMenu = null;
             }
-            
-            if(previewButton.containsPoint(x, y)) CustomiserMod.Instance.ResetDog();
             
             if (coatColorPicker.containsPoint(x, y)) CustomiserMod.Instance.ChangeCoatColor(coatColorPicker.click(x, y));
             if (collarColorPicker.containsPoint(x, y)) CustomiserMod.Instance.ChangeCollarColor(collarColorPicker.click(x, y));
